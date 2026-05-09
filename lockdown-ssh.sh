@@ -1,8 +1,8 @@
 #!/bin/bash
-# Run this once after 'tailscale up' to lock SSH to Tailscale only.
+# Run this once after 'tailscale up --netfilter-mode=off' to lock SSH to Tailscale only.
 # Usage: sudo lockdown-ssh
 #
-# Note: Uses userspace networking mode - restricts by Tailscale IP, not interface.
+# Works inside Docker by binding sshd to the Tailscale IP only (no iptables needed).
 
 set -e
 
@@ -13,13 +13,17 @@ if [ -z "$TAILSCALE_IP" ]; then
 fi
 
 echo "Tailscale IP: $TAILSCALE_IP"
-echo "Locking down SSH to Tailscale IP range only..."
 
-ufw --force reset
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow from 100.64.0.0/10 to any port 22
-ufw --force enable
+# Check if already locked down
+if grep -q "ListenAddress" /etc/ssh/sshd_config; then
+  echo "SSH is already restricted. Updating to current Tailscale IP..."
+  sed -i "/ListenAddress/d" /etc/ssh/sshd_config
+fi
 
-echo "Done. SSH is now only accessible via Tailscale (100.x.x.x addresses)."
+echo "ListenAddress $TAILSCALE_IP" >> /etc/ssh/sshd_config
+
+# Restart sshd to apply the change
+supervisorctl restart sshd
+
+echo "Done. SSH now only accepts connections on $TAILSCALE_IP"
 echo "Connect with: ssh hermes@$TAILSCALE_IP"
