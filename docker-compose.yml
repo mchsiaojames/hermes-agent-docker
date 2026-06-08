@@ -1,0 +1,10 @@
+services:
+  hermes:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - hermes-data:/home/hermes/.hermes
+
+volumes:
+  hermes-data:
+    driver: local
