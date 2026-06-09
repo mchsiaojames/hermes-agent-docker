@@ -4,7 +4,10 @@ services:
     restart: unless-stopped
     volumes:
       - hermes-data:/home/hermes/.hermes
+      - hermes-logs:/var/log/supervisor
 
 volumes:
   hermes-data:
+    driver: local
+  hermes-logs:
     driver: local
