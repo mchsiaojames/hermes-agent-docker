@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system packages + supervisord
-RUN apt-get update && apt-get install -y curl git sudo xz-utils ca-certificates supervisor && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl git sudo xz-utils ca-certificates supervisor vim ripgrep && rm -rf /var/lib/apt/lists/*
 
 # Create hermes user with sudo
 RUN useradd -m -s /bin/bash hermes && echo "hermes ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/hermes && chmod 0440 /etc/sudoers.d/hermes
